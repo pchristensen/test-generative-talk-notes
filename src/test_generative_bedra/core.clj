@@ -1,6 +1,7 @@
 (ns test-generative-bedra.core
   (:require [clojure.math.combinatorics :as comb]
-            [clojure.data :as data]))
+            [clojure.data :as data]
+            [clojure.test.generative.generators :as gen]))
 
 (defn exact-matches
   "Given two collections, return the number of positions where the collections contain equal items."
@@ -37,3 +38,15 @@
       :guess (seq guess)
       :score (score secret guess)})
    inputs))
+
+;; Display all combinations
+; (->> (generate-turn-inputs [:r :g :b] 2) (score-inputs))
+
+;; Print the entire domain to a file
+;; (use 'clojure.pprint)
+;; (require '[clojure.java.io :as io])
+;; (with-open [w (io/writer "scoring-table")]
+;;   (binding [*out* w]
+;;     (print-table
+;;      (->> (generate-turn-inputs [:r :g :b :y] 4)
+;;           (score-inputs)))))

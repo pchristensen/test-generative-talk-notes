@@ -1,7 +1,8 @@
 (ns test-generative-bedra.core
   (:require [clojure.math.combinatorics :as comb]
             [clojure.data :as data]
-            [clojure.test.generative.generators :as gen]))
+            [clojure.test.generative.generators :as gen])
+  (:use [clojure.test.generative :only (defspec) :as test]))
 
 (defn exact-matches
   "Given two collections, return the number of positions where the collections contain equal items."
@@ -50,3 +51,44 @@
 ;;     (print-table
 ;;      (->> (generate-turn-inputs [:r :g :b :y] 4)
 ;;           (score-inputs)))))
+
+(defn random-secret []
+  (gen/vec #(gen/one-of :r :g :b :y) 4))
+
+;; 9:00 Define the system constraints/contracts
+(defn matches
+  [score]
+  (+ (:exact score) (:unordered score)))
+
+(defn scoring-is-symmetric
+  [secret guess sc]
+  (= sc (score guess secret)))
+
+(defn scoring-is-bounded-by-number-of-pegs
+  [secret guess score]
+  (<= 0 (matches score) (count secret)))
+
+(defn reordering-the-guess-does-not-change-matches
+  [secret guess sc]
+  (= #{(matches sc)}
+     #{(matches sc)})) ;; This function was cutoff on screen so I wrote a tautology
+
+;; 9:30 Try out contracts with simple data
+;; 10:00 Create a test.generative test
+
+(defspec score-invariants
+  score
+  [^{:tag `random-secret} secret
+   ^{:tag `random-secret} guess]
+  (assert (scoring-is-symmetric secret guess %))
+  (assert (scoring-is-bounded-by-number-of-pegs secret guess %)))
+
+;; ;; 13:00 Practical cases - testing Clojure numerics
+;; (defspec integer-commutative-laws
+;;   (partial map identity)
+;;   [^{:tag `integer} a ^{:tag `integer} b]
+;;   (if (longable? (+' a b))
+;;     (assert (= (+ a b) (+ b a)
+;;                (+' a b) (+' b a)
+;;                (unchecked-add a b) (unchecked-add b a)))
+;;     (assert (= (+' a b) (+' b a)))))
